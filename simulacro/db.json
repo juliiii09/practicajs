@@ -1,0 +1,84 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "name": "A",
+      "email": "alice@test.com",
+      "role": "user"
+    },
+    {
+      "id": "2",
+      "name": "Admin",
+      "email": "admin@test.com",
+      "role": "admin"
+    },
+    {
+      "id": "788f",
+      "name": "juli",
+      "email": "juli@test.com",
+      "role": "user"
+    }
+  ],
+  "products": [
+    {
+      "id": "1",
+      "name": "Classic Beef Burger",
+      "price": 8.99
+    },
+    {
+      "id": "2",
+      "name": "Golden Fries",
+      "price": 3.99
+    },
+    {
+      "id": "3",
+      "name": "Cola Zero",
+      "price": 2.5
+    }
+  ],
+  "orders": [
+    {
+      "id": "2089",
+      "userId": "1",
+      "items": [
+        {
+          "id": 1,
+          "name": "Classic Beef Burger",
+          "price": 8.99
+        },
+        {
+          "id": 1,
+          "name": "Classic Beef Burger",
+          "price": 8.99
+        },
+        {
+          "id": 2,
+          "name": "Golden Fries",
+          "price": 3.99
+        },
+        {
+          "id": 1,
+          "name": "Classic Beef Burger",
+          "price": 8.99
+        }
+      ],
+      "total": 33.436800000000005,
+      "status": "delivered",
+      "date": "2026-02-02T17:56:09.123Z"
+    },
+    {
+      "id": "e99e",
+      "userId": "1",
+      "items": [
+        {
+          "id": 1,
+          "name": "Classic Beef Burger",
+          "price": 8.99
+        }
+      ],
+      "total": 9.709200000000001,
+      "status": "pending",
+      "date": "2026-02-02T17:56:22.393Z"
+    }
+  ]
+}
