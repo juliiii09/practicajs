@@ -204,3 +204,323 @@ function logout() {
   localStorage.clear();
   window.location.href = "login.html";
 }
+
+
+
+
+
+login y registro 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Login</title>
+</head>
+<body>
+
+<h2>Login</h2>
+<input id="loginUser" placeholder="Usuario">
+<input id="loginPass" type="password" placeholder="Contraseña">
+<button onclick="login()">Ingresar</button>
+
+<hr>
+
+<h2>Registro</h2>
+<input id="regUser" placeholder="Usuario">
+<input id="regPass" type="password" placeholder="Contraseña">
+<button onclick="registrar()">Registrar</button>
+
+<script>
+function registrar() {
+  const usuario = regUser.value;
+  const password = regPass.value;
+
+  const user = { usuario, password };
+  localStorage.setItem("usuario", JSON.stringify(user));
+
+  alert("Usuario registrado");
+}
+
+function login() {
+  const u = loginUser.value;
+  const p = loginPass.value;
+  const user = JSON.parse(localStorage.getItem("usuario"));
+
+  if (user && u === user.usuario && p === user.password) {
+    window.location.href = "dashboard.html";
+  } else {
+    alert("Credenciales incorrectas");
+  }
+}
+</script>
+
+</body>
+</html>
+
+
+
+////////
+
+cargar y editar
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard</title>
+  <style>
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    .modal {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.5);
+      display: flex; justify-content: center; align-items: center;
+    }
+    .hidden { display: none; }
+    .modal-content { background: #fff; padding: 20px; width: 300px; }
+  </style>
+</head>
+<body>
+
+<h2>Dashboard de Tareas</h2>
+<button onclick="abrirAgregar()">➕ Agregar tarea</button>
+
+<table>
+  <thead>
+    <tr>
+      <th>Título</th>
+      <th>Descripción</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody id="tabla"></tbody>
+</table>
+
+<!-- MODAL -->
+<div class="modal hidden" id="modal">
+  <div class="modal-content">
+    <h3 id="tituloModal"></h3>
+    <input id="titulo" placeholder="Título">
+    <input id="descripcion" placeholder="Descripción">
+    <button onclick="guardar()">Guardar</button>
+    <button onclick="cerrar()">Cancelar</button>
+  </div>
+</div>
+
+<script>
+let tareas = JSON.parse(localStorage.getItem("tareas")) || [];
+let editId = null;
+
+// Cargar tabla
+function pintarTabla() {
+  tabla.innerHTML = "";
+  tareas.forEach(t => {
+    tabla.innerHTML += `
+      <tr>
+        <td>${t.titulo}</td>
+        <td>${t.descripcion}</td>
+        <td>
+          <button onclick="abrirEditar(${t.id})">Editar</button>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+// Agregar
+function abrirAgregar() {
+  tituloModal.innerText = "Agregar tarea";
+  titulo.value = "";
+  descripcion.value = "";
+  editId = null;
+  modal.classList.remove("hidden");
+}
+
+// Editar
+function abrirEditar(id) {
+  tituloModal.innerText = "Editar tarea";
+  const tarea = tareas.find(t => t.id === id);
+  titulo.value = tarea.titulo;
+  descripcion.value = tarea.descripcion;
+  editId = id;
+  modal.classList.remove("hidden");
+}
+
+// Guardar
+function guardar() {
+  if (editId === null) {
+    tareas.push({
+      id: Date.now(),
+      titulo: titulo.value,
+      descripcion: descripcion.value
+    });
+  } else {
+    const tarea = tareas.find(t => t.id === editId);
+    tarea.titulo = titulo.value;
+    tarea.descripcion = descripcion.value;
+  }
+
+  localStorage.setItem("tareas", JSON.stringify(tareas));
+  cerrar();
+  pintarTabla();
+}
+
+function cerrar() {
+  modal.classList.add("hidden");
+}
+
+pintarTabla();
+</script>
+
+</body>
+</html>
+
+
+
+
+json
+
+tareas = [
+  {
+    id: 1,
+    titulo: "Estudiar JS",
+    descripcion: "Repasar eventos"
+  },
+  {
+    id: 2,
+    titulo: "Examen",
+    descripcion: "HTML y JS"
+  }
+]
+
+
+crud
+
+///
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard</title>
+  <style>
+    table { width:100%; border-collapse:collapse; margin-top:20px; }
+    th, td { border:1px solid #ccc; padding:8px; text-align:center; }
+    .modal {
+      position:fixed; inset:0;
+      background:rgba(0,0,0,.5);
+      display:flex; justify-content:center; align-items:center;
+    }
+    .hidden { display:none; }
+    .modal-content {
+      background:white;
+      padding:20px;
+      width:300px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Gestión de Tareas</h2>
+<button onclick="abrirAgregar()">➕ Agregar Tarea</button>
+
+<table>
+  <thead>
+    <tr>
+      <th>Título</th>
+      <th>Descripción</th>
+      <th>Acciones</th>
+    </tr>
+  </thead>
+  <tbody id="tabla"></tbody>
+</table>
+
+<!-- MODAL -->
+<div class="modal hidden" id="modal">
+  <div class="modal-content">
+    <h3 id="tituloModal"></h3>
+    <input id="titulo" placeholder="Título">
+    <input id="descripcion" placeholder="Descripción">
+    <button onclick="guardar()">Guardar</button>
+    <button onclick="cerrar()">Cancelar</button>
+  </div>
+</div>
+
+<script>
+// -------- JSON --------
+let tareas = JSON.parse(localStorage.getItem("tareas")) || [];
+let editId = null;
+
+// -------- READ --------
+function pintarTabla() {
+  tabla.innerHTML = "";
+  tareas.forEach(t => {
+    tabla.innerHTML += `
+      <tr>
+        <td>${t.titulo}</td>
+        <td>${t.descripcion}</td>
+        <td>
+          <button onclick="abrirEditar(${t.id})">Editar</button>
+          <button onclick="eliminar(${t.id})">Eliminar</button>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+// -------- CREATE --------
+function abrirAgregar() {
+  tituloModal.innerText = "Agregar tarea";
+  titulo.value = "";
+  descripcion.value = "";
+  editId = null;
+  modal.classList.remove("hidden");
+}
+
+// -------- UPDATE --------
+function abrirEditar(id) {
+  tituloModal.innerText = "Editar tarea";
+  const tarea = tareas.find(t => t.id === id);
+  titulo.value = tarea.titulo;
+  descripcion.value = tarea.descripcion;
+  editId = id;
+  modal.classList.remove("hidden");
+}
+
+// -------- SAVE (CREATE / UPDATE) --------
+function guardar() {
+  if (editId === null) {
+    tareas.push({
+      id: Date.now(),
+      titulo: titulo.value,
+      descripcion: descripcion.value
+    });
+  } else {
+    const tarea = tareas.find(t => t.id === editId);
+    tarea.titulo = titulo.value;
+    tarea.descripcion = descripcion.value;
+  }
+
+  localStorage.setItem("tareas", JSON.stringify(tareas));
+  cerrar();
+  pintarTabla();
+}
+
+// -------- DELETE --------
+function eliminar(id) {
+  tareas = tareas.filter(t => t.id !== id);
+  localStorage.setItem("tareas", JSON.stringify(tareas));
+  pintarTabla();
+}
+
+// -------- MODAL --------
+function cerrar() {
+  modal.classList.add("hidden");
+}
+
+pintarTabla();
+</script>
+
+</body>
+</html>
+
+
