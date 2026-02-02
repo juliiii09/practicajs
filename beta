@@ -1,0 +1,1356 @@
+login.html:
+
+// REGISTRO
+function register() {
+  const name = document.getElementById("name").value;
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  let users = JSON.parse(localStorage.getItem("users")) || [];
+
+  const exists = users.find(u => u.email === email);
+  if (exists) {
+    alert("User already exists");
+    return;
+  }
+
+  const newUser = {
+    id: Date.now(),
+    name,
+    email,
+    password
+  };
+
+  users.push(newUser);
+  localStorage.setItem("users", JSON.stringify(users));
+
+  alert("Account created successfully");
+  window.location.href = "login.html";
+}
+
+// LOGIN
+function login() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  let users = JSON.parse(localStorage.getItem("users")) || [];
+
+  const user = users.find(
+    u => u.email === email && u.password === password
+  );
+
+  if (!user) {
+    alert("Invalid credentials");
+    return;
+  }
+
+  // Guardamos la sesión
+  localStorage.setItem("loggedUser", JSON.stringify(user));
+  window.location.href = "dashboard.html";
+}
+
+register.html
+
+// REGISTRO
+function register() {
+  const name = document.getElementById("name").value;
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  let users = JSON.parse(localStorage.getItem("users")) || [];
+
+  const exists = users.find(u => u.email === email);
+  if (exists) {
+    alert("User already exists");
+    return;
+  }
+
+  const newUser = {
+    id: Date.now(),
+    name,
+    email,
+    password
+  };
+
+  users.push(newUser);
+  localStorage.setItem("users", JSON.stringify(users));
+
+  alert("Account created successfully");
+  window.location.href = "login.html";
+}
+
+// LOGIN
+function login() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  let users = JSON.parse(localStorage.getItem("users")) || [];
+
+  const user = users.find(
+    u => u.email === email && u.password === password
+  );
+
+  if (!user) {
+    alert("Invalid credentials");
+    return;
+  }
+
+  // Guardamos la sesión
+  localStorage.setItem("loggedUser", JSON.stringify(user));
+  window.location.href = "dashboard.html";
+}
+
+Dashboard.html
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<nav class="navbar navbar-light bg-white shadow-sm px-4">
+  <span class="fw-bold">CRUDZASO</span>
+  <button onclick="logout()" class="btn btn-outline-danger btn-sm">Logout</button>
+</nav>
+
+<div class="container-fluid">
+  <div class="row">
+
+    <!-- SIDEBAR -->
+    <aside class="col-2 bg-white vh-100 p-3">
+      <p class="fw-bold mb-4">Dashboard</p>
+      <a class="d-block mb-3" href="dashboard.html">My Tasks</a>
+      <a class="d-block mb-3" href="task-form.html">New Task</a>
+      <a class="d-block" href="profile.html">Profile</a>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="col-10 p-4">
+
+      <h4 class="fw-bold mb-4">Task Manager</h4>
+
+      <!-- STATS -->
+      <div class="row mb-4">
+        <div class="col">
+          <div class="card shadow-sm p-3">
+            Total Tasks
+            <h4 id="total">0</h4>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card shadow-sm p-3">
+            Completed
+            <h4 id="completed">0</h4>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card shadow-sm p-3">
+            Pending
+            <h4 id="pending">0</h4>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABLE -->
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>Task Name</th>
+                <th>Category</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Due Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="taskTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+const user = JSON.parse(localStorage.getItem("loggedUser"));
+if (!user) window.location.href = "login.html";
+
+function logout() {
+  localStorage.removeItem("loggedUser");
+  window.location.href = "login.html";
+}
+
+function loadTasks() {
+  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  let userTasks = tasks.filter(t => t.userId === user.id);
+
+  document.getElementById("total").innerText = userTasks.length;
+  document.getElementById("completed").innerText =
+    userTasks.filter(t => t.status === "Completed").length;
+  document.getElementById("pending").innerText =
+    userTasks.filter(t => t.status === "Pending").length;
+
+  const table = document.getElementById("taskTable");
+  table.innerHTML = "";
+
+  userTasks.forEach(t => {
+    table.innerHTML += `
+      <tr>
+        <td>${t.title}</td>
+        <td>${t.category}</td>
+        <td>${t.priority}</td>
+        <td>${t.status}</td>
+        <td>${t.date}</td>
+        <td>
+          <button class="btn btn-warning btn-sm" onclick="editTask(${t.id})">
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="deleteTask(${t.id})">
+            <i class="bi bi-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+function deleteTask(id) {
+  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  tasks = tasks.filter(t => t.id !== id);
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+  loadTasks();
+}
+
+function editTask(id) {
+  localStorage.setItem("editTaskId", id);
+  window.location.href = "task-form.html";
+}
+
+loadTasks();
+</script>
+
+</body>
+</html>
+
+
+
+task-form.html
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<nav class="navbar navbar-light bg-white shadow-sm px-4">
+  <span class="fw-bold">CRUDZASO</span>
+  <button onclick="logout()" class="btn btn-outline-danger btn-sm">Logout</button>
+</nav>
+
+<div class="container-fluid">
+  <div class="row">
+
+    <!-- SIDEBAR -->
+    <aside class="col-2 bg-white vh-100 p-3">
+      <p class="fw-bold mb-4">Dashboard</p>
+      <a class="d-block mb-3" href="dashboard.html">My Tasks</a>
+      <a class="d-block mb-3" href="task-form.html">New Task</a>
+      <a class="d-block" href="profile.html">Profile</a>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="col-10 p-4">
+
+      <h4 class="fw-bold mb-4">Task Manager</h4>
+
+      <!-- STATS -->
+      <div class="row mb-4">
+        <div class="col">
+          <div class="card shadow-sm p-3">
+            Total Tasks
+            <h4 id="total">0</h4>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card shadow-sm p-3">
+            Completed
+            <h4 id="completed">0</h4>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card shadow-sm p-3">
+            Pending
+            <h4 id="pending">0</h4>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABLE -->
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>Task Name</th>
+                <th>Category</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Due Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="taskTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+const user = JSON.parse(localStorage.getItem("loggedUser"));
+if (!user) window.location.href = "login.html";
+
+function logout() {
+  localStorage.removeItem("loggedUser");
+  window.location.href = "login.html";
+}
+
+function loadTasks() {
+  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  let userTasks = tasks.filter(t => t.userId === user.id);
+
+  document.getElementById("total").innerText = userTasks.length;
+  document.getElementById("completed").innerText =
+    userTasks.filter(t => t.status === "Completed").length;
+  document.getElementById("pending").innerText =
+    userTasks.filter(t => t.status === "Pending").length;
+
+  const table = document.getElementById("taskTable");
+  table.innerHTML = "";
+
+  userTasks.forEach(t => {
+    table.innerHTML += `
+      <tr>
+        <td>${t.title}</td>
+        <td>${t.category}</td>
+        <td>${t.priority}</td>
+        <td>${t.status}</td>
+        <td>${t.date}</td>
+        <td>
+          <button class="btn btn-warning btn-sm" onclick="editTask(${t.id})">
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="deleteTask(${t.id})">
+            <i class="bi bi-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+function deleteTask(id) {
+  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  tasks = tasks.filter(t => t.id !== id);
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+  loadTasks();
+}
+
+function editTask(id) {
+  localStorage.setItem("editTaskId", id);
+  window.location.href = "task-form.html";
+}
+
+loadTasks();
+</script>
+
+</body>
+</html>
+
+
+
+
+profile.html
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+
+<body class="bg-light">
+
+<nav class="navbar navbar-light bg-white shadow-sm px-4">
+  <span class="fw-bold">CRUDZASO</span>
+  <button onclick="logout()" class="btn btn-outline-danger btn-sm">Logout</button>
+</nav>
+
+<div class="container-fluid">
+  <div class="row">
+
+    <!-- SIDEBAR -->
+    <aside class="col-2 bg-white vh-100 p-3">
+      <p class="fw-bold mb-4">Dashboard</p>
+      <a class="d-block mb-3" href="dashboard.html">My Tasks</a>
+      <a class="d-block mb-3" href="task-form.html">New Task</a>
+      <a class="d-block" href="profile.html">Profile</a>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="col-10 p-4">
+
+      <h4 class="fw-bold mb-4">Task Manager</h4>
+
+      <!-- STATS -->
+      <div class="row mb-4">
+        <div class="col">
+          <div class="card shadow-sm p-3">
+            Total Tasks
+            <h4 id="total">0</h4>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card shadow-sm p-3">
+            Completed
+            <h4 id="completed">0</h4>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card shadow-sm p-3">
+            Pending
+            <h4 id="pending">0</h4>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABLE -->
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <table class="table align-middle">
+            <thead>
+              <tr>
+                <th>Task Name</th>
+                <th>Category</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Due Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="taskTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+const user = JSON.parse(localStorage.getItem("loggedUser"));
+if (!user) window.location.href = "login.html";
+
+function logout() {
+  localStorage.removeItem("loggedUser");
+  window.location.href = "login.html";
+}
+
+function loadTasks() {
+  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  let userTasks = tasks.filter(t => t.userId === user.id);
+
+  document.getElementById("total").innerText = userTasks.length;
+  document.getElementById("completed").innerText =
+    userTasks.filter(t => t.status === "Completed").length;
+  document.getElementById("pending").innerText =
+    userTasks.filter(t => t.status === "Pending").length;
+
+  const table = document.getElementById("taskTable");
+  table.innerHTML = "";
+
+  userTasks.forEach(t => {
+    table.innerHTML += `
+      <tr>
+        <td>${t.title}</td>
+        <td>${t.category}</td>
+        <td>${t.priority}</td>
+        <td>${t.status}</td>
+        <td>${t.date}</td>
+        <td>
+          <button class="btn btn-warning btn-sm" onclick="editTask(${t.id})">
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="deleteTask(${t.id})">
+            <i class="bi bi-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+function deleteTask(id) {
+  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  tasks = tasks.filter(t => t.id !== id);
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+  loadTasks();
+}
+
+function editTask(id) {
+  localStorage.setItem("editTaskId", id);
+  window.location.href = "task-form.html";
+}
+
+loadTasks();
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+version con json:
+
+db.json
+
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Sarah Jenkins",
+      "email": "sarah@crudzaso.com",
+      "password": "123456"
+    }
+  ],
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Database Optimization",
+      "category": "Computer Science",
+      "priority": "High",
+      "status": "Pending",
+      "date": "2023-10-25",
+      "userId": 1
+    }
+  ]
+}
+
+
+levantar la API:
+npm install -g json-server
+json-server --watch db.json --port 3000
+
+
+en todos los scripts:
+const API_URL = "http://localhost:3000";
+
+
+
+login.js
+<script>
+const API_URL = "http://localhost:3000";
+
+async function login() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  const res = await fetch(`${API_URL}/users`);
+  const users = await res.json();
+
+  const user = users.find(
+    u => u.email === email && u.password === password
+  );
+
+  if (!user) {
+    alert("Invalid credentials");
+    return;
+  }
+
+  localStorage.setItem("loggedUser", JSON.stringify(user));
+  window.location.href = "dashboard.html";
+}
+</script>
+
+
+
+
+register:
+
+<script>
+const API_URL = "http://localhost:3000";
+
+async function login() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  const res = await fetch(`${API_URL}/users`);
+  const users = await res.json();
+
+  const user = users.find(
+    u => u.email === email && u.password === password
+  );
+
+  if (!user) {
+    alert("Invalid credentials");
+    return;
+  }
+
+  localStorage.setItem("loggedUser", JSON.stringify(user));
+  window.location.href = "dashboard.html";
+}
+</script>
+
+
+
+dashboard:
+
+<script>
+const API_URL = "http://localhost:3000";
+
+async function login() {
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  const res = await fetch(`${API_URL}/users`);
+  const users = await res.json();
+
+  const user = users.find(
+    u => u.email === email && u.password === password
+  );
+
+  if (!user) {
+    alert("Invalid credentials");
+    return;
+  }
+
+  localStorage.setItem("loggedUser", JSON.stringify(user));
+  window.location.href = "dashboard.html";
+}
+</script>
+
+
+
+
+
+
+
+create/edit:
+
+<script>
+const API_URL = "http://localhost:3000";
+const user = JSON.parse(localStorage.getItem("loggedUser"));
+if (!user) window.location.href = "login.html";
+
+const editId = localStorage.getItem("editTaskId");
+
+if (editId) {
+  fetch(`${API_URL}/tasks/${editId}`)
+    .then(res => res.json())
+    .then(task => {
+      title.value = task.title;
+      category.value = task.category;
+      priority.value = task.priority;
+      status.value = task.status;
+      date.value = task.date;
+    });
+}
+
+async function saveTask() {
+  const task = {
+    title: title.value,
+    category: category.value,
+    priority: priority.value,
+    status: status.value,
+    date: date.value,
+    userId: user.id
+  };
+
+  if (editId) {
+    await fetch(`${API_URL}/tasks/${editId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(task)
+    });
+    localStorage.removeItem("editTaskId");
+  } else {
+    await fetch(`${API_URL}/tasks`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(task)
+    });
+  }
+
+  window.location.href = "dashboard.html";
+}
+</script>
+
+
+
+profile:
+
+<script>
+const user = JSON.parse(localStorage.getItem("loggedUser"));
+if (!user) window.location.href = "login.html";
+
+document.getElementById("name").innerText = user.name;
+document.getElementById("email").innerText = user.email;
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+version 3:
+db. json
+
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Dr. Sarah Jenkins",
+      "email": "sarah@crudzaso.edu",
+      "password": "123456",
+      "role": "System Admin",
+      "phone": "+1 (555) 123-4567",
+      "employeeId": "CZ-882103",
+      "department": "Computer Science",
+      "joinDate": "2020-09-14"
+    }
+  ],
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Database Optimization",
+      "category": "Computer Science",
+      "priority": "High",
+      "status": "In Progress",
+      "date": "2023-10-25",
+      "userId": 1
+    },
+    {
+      "id": 2,
+      "title": "Update Documentation",
+      "category": "Documentation",
+      "priority": "Medium",
+      "status": "Pending",
+      "date": "2023-10-24",
+      "userId": 1
+    }
+  ]
+}
+
+
+levantar la api:
+
+json-server --watch db.json --port 3000
+
+
+
+
+login.html:
+
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Login - CRUDZASO</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    body { background: #f5f7fb; }
+    .auth-card { width: 380px; border-radius: 10px; box-shadow: 0 12px 30px rgba(2,6,23,0.08); }
+    .brand { display:flex; align-items:center; gap:10px; font-weight:700; }
+    .brand .logo { width:36px; height:36px; border-radius:6px; background:#2563eb; display:inline-block; }
+  </style>
+</head>
+<body class="d-flex justify-content-center align-items-center vh-100">
+
+  <div class="card auth-card">
+    <div class="card-body p-4">
+      <div class="text-center mb-3">
+        <div class="brand justify-content-center mb-2">
+          <span class="logo"></span>
+          CRUDZASO
+        </div>
+        <h4 class="mb-1">Welcome back</h4>
+        <div class="text-muted small">Enter your credentials to access the platform</div>
+      </div>
+
+      <div class="mt-4">
+        <input id="email" class="form-control mb-3" placeholder="Email or username">
+        <input id="password" type="password" class="form-control mb-2" placeholder="Password">
+
+        <div class="text-end mb-3">
+          <a href="#" class="small">Forgot password?</a>
+        </div>
+
+        <button id="btnLogin" class="btn btn-primary w-100">Sign in</button>
+
+        <p class="text-center mt-3 small">
+          Don’t have an account? <a href="register.html">Register</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+<script>
+const API_URL = "http://localhost:3000";
+
+document.getElementById("btnLogin").addEventListener("click", async () => {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+  if (!email || !password) return alert("Completa email y password.");
+
+  try {
+    const qs = `?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
+    const res = await fetch(`${API_URL}/users${qs}`);
+    const users = await res.json();
+
+    if (!users || users.length === 0) {
+      alert("Credenciales inválidas.");
+      return;
+    }
+
+    const user = users[0];
+    localStorage.setItem("loggedUser", JSON.stringify(user));
+    window.location.href = "dashboard.html";
+  } catch (err) {
+    alert("Error conectando con la API. ¿Levantar json-server?");
+    console.error(err);
+  }
+});
+</script>
+
+</body>
+</html>
+
+
+
+
+register.html:
+
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Register - CRUDZASO</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background: #f5f7fb; }
+    .auth-card { width: 420px; border-radius: 10px; box-shadow: 0 12px 30px rgba(2,6,23,0.08); }
+    .brand .logo { width:36px; height:36px; border-radius:6px; background:#2563eb; display:inline-block; }
+  </style>
+</head>
+<body class="d-flex justify-content-center align-items-center vh-100">
+
+  <div class="card auth-card">
+    <div class="card-body p-4">
+      <div class="text-center mb-3">
+        <div class="brand justify-content-center mb-2">
+          <span class="logo"></span>
+          CRUDZASO
+        </div>
+        <h4 class="mb-1">Create account</h4>
+        <div class="text-muted small">Join the academic performance platform today</div>
+      </div>
+
+      <div class="mt-4">
+        <input id="name" class="form-control mb-2" placeholder="Full name">
+        <input id="email" class="form-control mb-2" placeholder="Email address">
+        <input id="password" type="password" class="form-control mb-3" placeholder="Password">
+
+        <button id="btnRegister" class="btn btn-primary w-100">Register</button>
+
+        <p class="text-center mt-3 small">
+          Already have an account? <a href="login.html">Sign in</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+<script>
+const API_URL = "http://localhost:3000";
+
+document.getElementById("btnRegister").addEventListener("click", async () => {
+  const name = document.getElementById("name").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+  if (!name || !email || !password) return alert("Completa todos los campos.");
+
+  try {
+    // comprobar email
+    const existing = await (await fetch(`${API_URL}/users?email=${encodeURIComponent(email)}`)).json();
+    if (existing.length > 0) {
+      return alert("Ya existe un usuario con ese email.");
+    }
+
+    // registrar
+    const res = await fetch(`${API_URL}/users`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password })
+    });
+
+    if (!res.ok) throw new Error("Error creando usuario.");
+    alert("Cuenta creada correctamente. Inicia sesión.");
+    window.location.href = "login.html";
+  } catch (err) {
+    alert("Error al comunicarse con la API.");
+    console.error(err);
+  }
+});
+</script>
+
+</body>
+</html>
+
+
+Dashboard.html:
+
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Dashboard - CRUDZASO</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    body { background:#f5f7fb; }
+    .sidebar { width:220px; position:fixed; left:0; top:0; bottom:0; padding:24px; background:#fff; box-shadow: 2px 0 6px rgba(2,6,23,0.03);}
+    .main { margin-left: 240px; padding:28px; }
+    .stat-card { border-radius:8px; padding:18px; background:#fff; box-shadow:0 8px 20px rgba(2,6,23,0.03); }
+    .table-card { background:#fff; box-shadow:0 8px 20px rgba(2,6,23,0.03); padding:16px; border-radius:8px; }
+    .brand .logo { width:28px; height:28px; border-radius:6px; background:#2563eb; display:inline-block; margin-right:8px; }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="navbar navbar-light bg-white shadow-sm px-4">
+    <div class="d-flex align-items-center">
+      <div class="brand d-flex align-items-center"><span class="logo"></span><strong>CRUDZASO</strong></div>
+    </div>
+    <div class="d-flex align-items-center">
+      <button id="btnNew" class="btn btn-primary btn-sm me-3">+ New Task</button>
+      <button id="btnLogout" class="btn btn-outline-danger btn-sm">Logout</button>
+    </div>
+  </nav>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="mb-4"><strong>Navigation</strong></div>
+    <a class="d-block mb-2" href="dashboard.html"><i class="bi bi-grid-1x2 me-2"></i> Dashboard</a>
+    <a class="d-block mb-2" href="task-form.html"><i class="bi bi-plus-circle me-2"></i> New Task</a>
+    <a class="d-block" href="profile.html"><i class="bi bi-person me-2"></i> Profile</a>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <h3 class="mb-3">Task Manager</h3>
+    <div class="row g-3 mb-4">
+      <div class="col-md-3"><div class="stat-card"><small class="text-muted">Total Tasks</small><h4 id="total">0</h4></div></div>
+      <div class="col-md-3"><div class="stat-card"><small class="text-muted">Completed</small><h4 id="completed">0</h4></div></div>
+      <div class="col-md-3"><div class="stat-card"><small class="text-muted">Pending</small><h4 id="pending">0</h4></div></div>
+      <div class="col-md-3"><div class="stat-card"><small class="text-muted">Overall Progress</small><h4 id="progress">0%</h4></div></div>
+    </div>
+
+    <div class="table-card">
+      <div class="mb-3 d-flex justify-content-between">
+        <input id="search" class="form-control w-50" placeholder="Search tasks by title...">
+        <div></div>
+      </div>
+
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>Task Name</th>
+            <th>Category</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Due Date</th>
+            <th style="width:120px">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="taskTable"></tbody>
+      </table>
+    </div>
+  </main>
+
+<script>
+const API_URL = "http://localhost:3000";
+
+const user = JSON.parse(localStorage.getItem("loggedUser"));
+if (!user) {
+  window.location.href = "login.html";
+}
+
+document.getElementById("btnLogout").addEventListener("click", () => {
+  localStorage.removeItem("loggedUser");
+  window.location.href = "login.html";
+});
+
+document.getElementById("btnNew").addEventListener("click", () => {
+  localStorage.removeItem("editTaskId");
+  window.location.href = "task-form.html";
+});
+
+async function loadTasks(q = "") {
+  try {
+    // buscar tareas del usuario
+    const url = `${API_URL}/tasks?userId=${user.id}`;
+    const res = await fetch(url);
+    const tasks = await res.json();
+
+    const filtered = q ? tasks.filter(t => t.title.toLowerCase().includes(q.toLowerCase())) : tasks;
+
+    document.getElementById("total").innerText = filtered.length;
+    document.getElementById("completed").innerText = filtered.filter(t => t.status === "Completed").length;
+    document.getElementById("pending").innerText = filtered.filter(t => t.status === "Pending").length;
+
+    // progress simple: % completed
+    const prog = filtered.length ? Math.round((filtered.filter(t => t.status === "Completed").length / filtered.length) * 100) : 0;
+    document.getElementById("progress").innerText = `${prog}%`;
+
+    const table = document.getElementById("taskTable");
+    table.innerHTML = "";
+
+    filtered.forEach(t => {
+      table.innerHTML += `
+        <tr>
+          <td>${t.title}</td>
+          <td>${t.category || '-'}</td>
+          <td>${t.priority}</td>
+          <td>${t.status}</td>
+          <td>${t.date || '-'}</td>
+          <td>
+            <button class="btn btn-sm btn-warning me-1" onclick="onEdit(${t.id})"><i class="bi bi-pencil"></i></button>
+            <button class="btn btn-sm btn-danger" onclick="onDelete(${t.id})"><i class="bi bi-trash"></i></button>
+          </td>
+        </tr>
+      `;
+    });
+  } catch (err) {
+    console.error(err);
+    alert("Error cargando tareas. ¿Corres json-server?");
+  }
+}
+
+async function onDelete(id) {
+  if (!confirm("¿Eliminar tarea?")) return;
+  await fetch(`${API_URL}/tasks/${id}`, { method: "DELETE" });
+  loadTasks(document.getElementById("search").value);
+}
+
+function onEdit(id) {
+  localStorage.setItem("editTaskId", id);
+  window.location.href = "task-form.html";
+}
+
+// search
+document.getElementById("search").addEventListener("input", (e) => {
+  loadTasks(e.target.value);
+});
+
+loadTasks();
+</script>
+
+</body>
+</html>
+
+
+
+task-form.html:
+
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Create/Edit Task - CRUDZASO</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background:#f5f7fb; }
+    .container { max-width:1100px; margin-top:36px; }
+    .card { box-shadow:0 12px 30px rgba(2,6,23,0.03); border-radius:8px; }
+    .brand .logo { width:28px; height:28px; border-radius:6px; background:#2563eb; display:inline-block; margin-right:8px; }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-light bg-white shadow-sm px-4">
+  <div class="d-flex align-items-center">
+    <div class="brand d-flex align-items-center"><span class="logo"></span><strong>CRUDZASO</strong></div>
+  </div>
+  <div class="d-flex align-items-center">
+    <a href="dashboard.html" class="btn btn-outline-secondary btn-sm me-2">Back to Tasks</a>
+    <button id="btnLogout" class="btn btn-outline-danger btn-sm">Logout</button>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="card p-4">
+    <h4 class="mb-3">Create New Task</h4>
+
+    <div class="row">
+      <div class="col-md-6">
+        <label class="form-label">Task Title</label>
+        <input id="title" class="form-control mb-3" placeholder="e.g. Complete Quarter 1 Report">
+
+        <label class="form-label">Category</label>
+        <input id="category" class="form-control mb-3" placeholder="Select category...">
+
+        <label class="form-label">Status</label>
+        <select id="status" class="form-select mb-3">
+          <option>Pending</option>
+          <option>In Progress</option>
+          <option>Completed</option>
+        </select>
+
+        <label class="form-label">Description</label>
+        <textarea id="description" class="form-control mb-3" rows="4" placeholder="Add details about this task"></textarea>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Priority</label>
+        <select id="priority" class="form-select mb-3">
+          <option>Low</option>
+          <option selected>Medium</option>
+          <option>High</option>
+        </select>
+
+        <label class="form-label">Due Date</label>
+        <input id="date" type="date" class="form-control mb-3">
+
+        <div class="mt-5">
+          <button id="btnSave" class="btn btn-primary">Save Task</button>
+          <a href="dashboard.html" class="btn btn-link ms-3">Cancel</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_URL = "http://localhost:3000";
+const user = JSON.parse(localStorage.getItem("loggedUser"));
+if (!user) window.location.href = "login.html";
+
+document.getElementById("btnLogout").addEventListener("click", () => {
+  localStorage.removeItem("loggedUser");
+  window.location.href = "login.html";
+});
+
+let editId = localStorage.getItem("editTaskId");
+
+async function loadIfEdit() {
+  if (!editId) return;
+  try {
+    const res = await fetch(`${API_URL}/tasks/${editId}`);
+    if (!res.ok) throw new Error("No encontrada");
+    const task = await res.json();
+    document.getElementById("title").value = task.title || "";
+    document.getElementById("category").value = task.category || "";
+    document.getElementById("priority").value = task.priority || "Medium";
+    document.getElementById("status").value = task.status || "Pending";
+    document.getElementById("date").value = task.date || "";
+    document.getElementById("description").value = task.description || "";
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+document.getElementById("btnSave").addEventListener("click", async () => {
+  const title = document.getElementById("title").value.trim();
+  if (!title) return alert("El título es obligatorio.");
+
+  const payload = {
+    title,
+    category: document.getElementById("category").value.trim(),
+    priority: document.getElementById("priority").value,
+    status: document.getElementById("status").value,
+    date: document.getElementById("date").value,
+    description: document.getElementById("description").value.trim(),
+    userId: user.id
+  };
+
+  try {
+    if (editId) {
+      await fetch(`${API_URL}/tasks/${editId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      localStorage.removeItem("editTaskId");
+    } else {
+      await fetch(`${API_URL}/tasks`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+    }
+    window.location.href = "dashboard.html";
+  } catch (err) {
+    alert("Error guardando tarea.");
+    console.error(err);
+  }
+});
+
+loadIfEdit();
+</script>
+
+</body>
+</html>
+
+
+
+profile.html:
+
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Profile - CRUDZASO</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background:#f5f7fb; }
+    .sidebar { width:220px; position:fixed; left:0; top:0; bottom:0; padding:24px; background:#fff; box-shadow: 2px 0 6px rgba(2,6,23,0.03);}
+    .main { margin-left: 240px; padding:28px; }
+    .avatar { width:110px; height:110px; border-radius:50%; background:#ddd; display:inline-block; }
+    .card { box-shadow:0 12px 30px rgba(2,6,23,0.03); border-radius:8px; }
+  </style>
+</head>
+<body>
+
+  <aside class="sidebar">
+    <div class="mb-4"><strong>CRUDZASO</strong></div>
+    <a class="d-block mb-2" href="dashboard.html">Dashboard</a>
+    <a class="d-block mb-2" href="task-form.html">New Task</a>
+    <a class="d-block" href="profile.html">Profile</a>
+  </aside>
+
+  <main class="main">
+    <div class="card p-4 mb-4">
+      <h4 class="mb-3">My Profile</h4>
+      <div class="row">
+        <div class="col-md-3 text-center">
+          <div class="avatar mb-3"></div>
+          <h5 id="nameDisplay"></h5>
+          <div class="text-muted small" id="roleDisplay"></div>
+          <div class="mt-2 text-muted small" id="emailDisplay"></div>
+        </div>
+
+        <div class="col-md-6">
+          <h6 class="mb-2">Personal Information</h6>
+          <div class="row">
+            <div class="col-6"><small class="text-muted">Full Name</small><div id="p-name"></div></div>
+            <div class="col-6"><small class="text-muted">Employee ID</small><div id="p-employee"></div></div>
+
+            <div class="col-6 mt-3"><small class="text-muted">Phone</small><div id="p-phone"></div></div>
+            <div class="col-6 mt-3"><small class="text-muted">Department</small><div id="p-dept"></div></div>
+
+            <div class="col-6 mt-3"><small class="text-muted">Role Level</small><div id="p-role"></div></div>
+            <div class="col-6 mt-3"><small class="text-muted">Join Date</small><div id="p-join"></div></div>
+          </div>
+        </div>
+
+        <div class="col-md-3 text-end">
+          <button id="btnEdit" class="btn btn-outline-primary btn-sm">Edit Profile</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card p-4">
+      <h6>Statistics</h6>
+      <div class="row">
+        <div class="col-md-3">
+          <div class="p-3"><strong id="tasksCount">0</strong><div class="small text-muted">Tasks</div></div>
+        </div>
+        <div class="col-md-3">
+          <div class="p-3"><strong id="tasksCompleted">0</strong><div class="small text-muted">Completed</div></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+<script>
+const API_URL = "http://localhost:3000";
+const user = JSON.parse(localStorage.getItem("loggedUser"));
+if (!user) window.location.href = "login.html";
+
+function populate(u) {
+  document.getElementById("nameDisplay").innerText = u.name;
+  document.getElementById("roleDisplay").innerText = u.role || "";
+  document.getElementById("emailDisplay").innerText = u.email;
+
+  document.getElementById("p-name").innerText = u.name || "";
+  document.getElementById("p-employee").innerText = u.employeeId || "-";
+  document.getElementById("p-phone").innerText = u.phone || "-";
+  document.getElementById("p-dept").innerText = u.department || "-";
+  document.getElementById("p-role").innerText = u.role || "-";
+  document.getElementById("p-join").innerText = u.joinDate || "-";
+}
+
+async function loadStats() {
+  try {
+    const res = await fetch(`${API_URL}/tasks?userId=${user.id}`);
+    const tasks = await res.json();
+    document.getElementById("tasksCount").innerText = tasks.length;
+    document.getElementById("tasksCompleted").innerText = tasks.filter(t => t.status === "Completed").length;
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+populate(user);
+loadStats();
+
+document.getElementById("btnEdit").addEventListener("click", () => {
+  alert("Edición de perfil no implementada en esta versión (opcional).");
+});
+</script>
+
+</body>
+</html>
+
+
+
+
+
