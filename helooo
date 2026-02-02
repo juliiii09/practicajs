@@ -1,0 +1,206 @@
+/************************************************
+ * CONFIGURACIÓN BASE
+ ************************************************/
+
+// URL base del backend simulado (json-server)
+const API_URL = "http://localhost:3000";
+
+// Obtener sesión actual (si existe)
+const session = JSON.parse(localStorage.getItem("session"));
+
+/************************************************
+ * LOGIN
+ ************************************************/
+
+function login(email, password) {
+  // 1. Pedimos todos los usuarios al servidor
+  fetch(`${API_URL}/users`)
+    .then(res => res.json())
+    .then(users => {
+
+      // 2. Buscamos un usuario que coincida
+      const user = users.find(
+        u => u.email === email && u.password === password
+      );
+
+      // 3. Validación
+      if (!user) {
+        alert("Invalid credentials");
+        return;
+      }
+
+      // 4. Guardamos sesión
+      localStorage.setItem("session", JSON.stringify(user));
+
+      // 5. Redirección según rol
+      if (user.role === "admin") {
+        window.location.href = "admin.html";
+      } else {
+        window.location.href = "products.html";
+      }
+    });
+}
+
+/************************************************
+ * REGISTRO DE USUARIO
+ ************************************************/
+
+function register(name, email, password) {
+  // 1. Creamos el objeto usuario
+  const newUser = {
+    name: name,
+    email: email,
+    password: password,
+    role: "user"
+  };
+
+  // 2. Enviamos el usuario al servidor
+  fetch(`${API_URL}/users`, {
+    method: "POST",                     // CREATE
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(newUser)
+  })
+  .then(() => {
+    alert("User registered");
+    window.location.href = "login.html";
+  });
+}
+
+/************************************************
+ * PROTECCIÓN DE RUTAS
+ ************************************************/
+
+function protectRoute(requiredRole) {
+  const session = JSON.parse(localStorage.getItem("session"));
+
+  // Si no hay sesión, se redirige
+  if (!session) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  // Si hay rol requerido y no coincide
+  if (requiredRole && session.role !== requiredRole) {
+    window.location.href = "login.html";
+  }
+}
+
+/************************************************
+ * CRUD DE PRODUCTOS
+ ************************************************/
+
+/* READ - Obtener productos */
+function getProducts() {
+  return fetch(`${API_URL}/products`)
+    .then(res => res.json());
+}
+
+/* CREATE - Crear producto */
+function createProduct(name, price, stock) {
+  const product = { name, price, stock };
+
+  fetch(`${API_URL}/products`, {
+    method: "POST",                     // CREATE
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(product)
+  });
+}
+
+/* UPDATE - Actualizar producto */
+function updateProduct(id, data) {
+  fetch(`${API_URL}/products/${id}`, {
+    method: "PATCH",                    // UPDATE
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  });
+}
+
+/* DELETE - Eliminar producto */
+function deleteProduct(id) {
+  fetch(`${API_URL}/products/${id}`, {
+    method: "DELETE"                    // DELETE
+  });
+}
+
+/************************************************
+ * CRUD DE ÓRDENES
+ ************************************************/
+
+/* CREATE - Crear orden */
+function createOrder(productId) {
+  const session = JSON.parse(localStorage.getItem("session"));
+
+  const order = {
+    userId: session.id,
+    productId: productId,
+    status: "pending",
+    date: new Date().toISOString()
+  };
+
+  fetch(`${API_URL}/orders`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(order)
+  });
+}
+
+/* READ - Obtener órdenes del usuario */
+function getMyOrders() {
+  const session = JSON.parse(localStorage.getItem("session"));
+
+  return fetch(`${API_URL}/orders?userId=${session.id}`)
+    .then(res => res.json());
+}
+
+/* UPDATE - Cambiar estado de orden */
+function updateOrderStatus(orderId, status) {
+  fetch(`${API_URL}/orders/${orderId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status })
+  });
+}
+
+/* DELETE - Eliminar orden */
+function deleteOrder(orderId) {
+  fetch(`${API_URL}/orders/${orderId}`, {
+    method: "DELETE"
+  });
+}
+
+/************************************************
+ * CRUD DE USUARIOS (ADMIN)
+ ************************************************/
+
+/* READ - Obtener usuarios */
+function getUsers() {
+  return fetch(`${API_URL}/users`)
+    .then(res => res.json());
+}
+
+/* UPDATE - Cambiar rol */
+function updateUserRole(userId, role) {
+  fetch(`${API_URL}/users/${userId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ role })
+  });
+}
+
+/* DELETE - Eliminar usuario */
+function deleteUser(userId) {
+  fetch(`${API_URL}/users/${userId}`, {
+    method: "DELETE"
+  });
+}
+
+/************************************************
+ * LOGOUT
+ ************************************************/
+
+function logout() {
+  localStorage.clear();
+  window.location.href = "login.html";
+}
