@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Profile - CRUDZASO</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background:#f5f7fb; }
+    .sidebar 
+    { width:220px;
+        position:fixed; 
+        left:0; 
+        top:0; 
+        bottom:0; 
+        padding:24px;
+        background:#fff;
+        box-shadow: 2px 0 6px rgba(2,6,23,0.03);
+        }
+
+    .main { 
+        margin-left: 240px;
+        padding:28px; 
+    }
+    .avatar 
+    { width:110px;
+         height:110px; 
+         border-radius:50%; 
+         background:#ddd; 
+         display:inline-block; 
+        }
+    .card 
+    { box-shadow:0 12px 30px rgba(2,6,23,0.03); 
+    border-radius:8px; 
+}
+  </style>
+</head>
+<body>
+
+    <!-- aside -->
+  <aside class="sidebar">
+    <div class="mb-2"><strong>CRUDZASO</strong></div>
+    <a class="d-block mb-2" href="dashboard.html">Dashboard</a>
+    <a class="d-block mb-2" href="task-form.html">New Task</a>
+    <a class="d-block" href="profile.html">Profile</a>
+  </aside>
+
+  <main class="main">
+    <div class="card p-4 mb-4">
+      <h4 class="mb-3">My Profile</h4>
+      <div class="row">
+        <div class="col-md-3 text-center">
+          <div class="avatar mb-3"><img src="img/images.png" width="120px" alt=""></div>
+          <h5 id="nameDisplay"></h5>
+          <div class="text-muted small" id="roleDisplay"></div>
+          <div class="mt-2 text-muted small" id="emailDisplay"></div>
+        </div>
+
+        <div class="col-md-6">
+          <h6 class="mb-2">Personal Information</h6>
+          <div class="row">
+            <div class="col-6"><small class="text-muted">Full Name</small><div id="p-name"></div></div>
+            <div class="col-6"><small class="text-muted">Employee ID</small><div id="p-employee"></div></div>
+
+            <div class="col-6 mt-3"><small class="text-muted">Phone</small><div id="p-phone"></div></div>
+            <div class="col-6 mt-3"><small class="text-muted">Department</small><div id="p-dept"></div></div>
+
+            <div class="col-6 mt-3"><small class="text-muted">Role Level</small><div id="p-role"></div></div>
+            <div class="col-6 mt-3"><small class="text-muted">Join Date</small><div id="p-join"></div></div>
+          </div>
+        </div>
+
+        <div class="col-md-3 text-end">
+          <button id="btnEdit" class="btn btn-outline-primary btn-sm">Edit Profile</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card p-4">
+      <h6>Statistics</h6>
+      <div class="row">
+        <div class="col-md-3">
+          <div class="p-3"><strong id="tasksCount">0</strong><div class="small text-muted">Tasks</div></div>
+        </div>
+        <div class="col-md-3">
+          <div class="p-3"><strong id="tasksCompleted">0</strong><div class="small text-muted">Completed</div></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+<script>
+    
+const API_URL = "http://localhost:3000";
+const user = JSON.parse(localStorage.getItem("loggedUser"));
+if (!user) window.location.href = "login.html";
+
+
+//informacion de usuario recibida del json
+function populate(u) {
+  document.getElementById("nameDisplay").innerText = u.name;
+  document.getElementById("roleDisplay").innerText = u.role || "";
+  document.getElementById("emailDisplay").innerText = u.email;
+
+  document.getElementById("p-name").innerText = u.name || "";
+  document.getElementById("p-employee").innerText = u.employeeId || "-";
+  document.getElementById("p-phone").innerText = u.phone || "-";
+  document.getElementById("p-dept").innerText = u.department || "-";
+  document.getElementById("p-role").innerText = u.role || "-";
+  document.getElementById("p-join").innerText = u.joinDate || "-";
+}
+
+//estadisticas
+async function loadStats() {
+  try {
+    const res = await fetch(`${API_URL}/tasks?userId=${user.id}`);
+    const tasks = await res.json();
+    document.getElementById("tasksCount").innerText = tasks.length;
+    document.getElementById("tasksCompleted").innerText = tasks.filter(t => t.status === "Completed").length;
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+populate(user);
+loadStats();
+
+document.getElementById("btnEdit").addEventListener("click", () => {
+  alert("no disponible en este momento.");
+});
+
+
+</script>
+
+</body>
+</html>

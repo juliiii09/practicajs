@@ -1,0 +1,72 @@
+{
+  "users": [
+    {
+      "id": "1",
+      "name": "Dr. Sarah Jenkins",
+      "email": "sarah@crudzaso.edu",
+      "password": "123456",
+      "role": "System Admin",
+      "phone": "3245678744",
+      "employeeId": "CZ-882103",
+      "department": "Computer Science",
+      "joinDate": "2020-09-14"
+    },
+    {
+      "id": "dffa",
+      "name": "juliana",
+      "email": "juli@gmail.com",
+      "password": "123",
+      "role": "user",
+      "phone": "3245678744",
+      "employeeId": "CZ-882103",
+      "department": "Computer Science",
+      "joinDate": "2020-09-14"
+    },
+    {
+      "id": "db20",
+      "name": "juli",
+      "email": "ana@gmail.com",
+      "password": "123"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "1",
+      "title": "Database Optimization",
+      "category": "Computer Science",
+      "priority": "High",
+      "status": "In Progress",
+      "date": "2023-10-25",
+      "userId": 1
+    },
+    {
+      "id": "2",
+      "title": "Update Documentation",
+      "category": "Documentation",
+      "priority": "Medium",
+      "status": "Pending",
+      "date": "2023-10-24",
+      "userId": 1
+    },
+    {
+      "id": "dbb2",
+      "title": "lavar los platos",
+      "category": "cocina",
+      "priority": "High",
+      "status": "Pending",
+      "date": "2026-02-06",
+      "description": "",
+      "userId": "dffa"
+    },
+    {
+      "id": "0f2e",
+      "title": "organizar mi habitacion",
+      "category": "organizacion",
+      "priority": "Low",
+      "status": "In Progress",
+      "date": "2026-02-04",
+      "description": "",
+      "userId": "db20"
+    }
+  ]
+}
