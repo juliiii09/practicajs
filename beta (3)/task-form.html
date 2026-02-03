@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title> task-form CRUDZASO</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { 
+        background:#f5f7fb; 
+    }
+    .container { 
+        max-width:1100px; 
+        margin-top:36px; 
+    }
+    .card { 
+        box-shadow:0 12px 30px rgba(2,6,23,0.03); 
+        border-radius:8px; 
+    }
+    .brand .logo { width:28px; 
+        height:28px; 
+        border-radius:6px; 
+        background:#ffffff; 
+        display:inline-block; 
+        margin-right:8px; 
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-light bg-white shadow-sm px-4">
+  <div class="d-flex align-items-center">
+    <div class="brand d-flex align-items-center"><span class="logo"><img src="img/images.png" width="30px" alt=""></span><strong>CRUDZASO</strong></div>
+  </div>
+  <div class="d-flex align-items-center">
+    <a href="dashboard.html" class="btn btn-outline-secondary btn-sm me-2">Back to Tasks</a>
+    <button id="btnLogout" class="btn btn-outline-danger btn-sm">Logout</button>
+  </div>
+</nav>
+
+
+
+<!-- crear una nueva tarea-->
+<div class="container">
+  <div class="card p-4">
+    <h4 class="mb-3">Create New Task</h4>
+
+    <div class="row">
+      <div class="col-md-6">
+        <label class="form-label">Task Title</label>
+        <input id="title" class="form-control mb-3">
+
+        <label class="form-label">Category</label>
+        <input id="category" class="form-control mb-3" placeholder="Select category...">
+
+        <label class="form-label">Status</label>
+        <select id="status" class="form-select mb-3">
+          <option>Pending</option>
+          <option>In Progress</option>
+          <option>Completed</option>
+        </select>
+
+        <label class="form-label">Description</label>
+        <textarea id="description" class="form-control mb-3" rows="4" placeholder="Add details about this task"></textarea>
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Priority</label>
+        <select id="priority" class="form-select mb-3">
+          <option>Low</option>
+          <option selected>Medium</option>
+          <option>High</option>
+        </select>
+
+        <label class="form-label">Due Date</label>
+        <input id="date" type="date" class="form-control mb-3">
+
+        <div class="mt-5">
+          <button id="btnSave" class="btn btn-primary">Save Task</button>
+          <a href="dashboard.html" class="btn btn-link ms-3">Cancel</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    
+    //verificaciones de seguridad
+const API_URL = "http://localhost:3000";
+const user = JSON.parse(localStorage.getItem("loggedUser"));
+if (!user) window.location.href = "login.html";
+
+document.getElementById("btnLogout").addEventListener("click", () => {
+  localStorage.removeItem("loggedUser");
+  window.location.href = "login.html";
+});
+
+let editId = localStorage.getItem("editTaskId");
+
+//editar tarea
+
+async function loadIfEdit() {
+  if (!editId) return;
+  try {
+    const res = await fetch(`${API_URL}/tasks/${editId}`);
+    if (!res.ok) throw new Error("No encontrada");
+    const task = await res.json();
+    document.getElementById("title").value = task.title || "";
+    document.getElementById("category").value = task.category || "";
+    document.getElementById("priority").value = task.priority || "Medium";
+    document.getElementById("status").value = task.status || "Pending";
+    document.getElementById("date").value = task.date || "";
+    document.getElementById("description").value = task.description || "";
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+document.getElementById("btnSave").addEventListener("click", async () => {
+  const title = document.getElementById("title").value.trim();
+  if (!title) return alert("El título es obligatorio.");
+
+  const payload = {
+    title,
+    category: document.getElementById("category").value.trim(),
+    priority: document.getElementById("priority").value,
+    status: document.getElementById("status").value,
+    date: document.getElementById("date").value,
+    description: document.getElementById("description").value.trim(),
+    userId: user.id
+  };
+
+  //gurdar tarea
+  try {
+    if (editId) {
+      await fetch(`${API_URL}/tasks/${editId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      localStorage.removeItem("editTaskId");
+    } else {
+      await fetch(`${API_URL}/tasks`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+    }
+    //mensaje de error
+    window.location.href = "dashboard.html";
+  } catch (err) {
+    alert("Error guardando tarea.");
+    console.error(err);
+  }
+});
+
+loadIfEdit();
+
+</script>
+
+</body>
+</html>

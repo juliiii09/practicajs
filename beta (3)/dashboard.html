@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Dashboard - CRUDZASO</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    body 
+    { background:#f5f7fb;
+        
+    }
+    .sidebar { 
+        width:220px; 
+        position:fixed; 
+        left:0; 
+        top:0; 
+        bottom:0; 
+        padding:24px; 
+        background:#fff; 
+        box-shadow: 2px 0 6px rgba(2,6,23,0.03);
+        
+    }
+    .sidebar.collapsed {
+      width:70px;
+    }
+
+ .sidebar.collapsed span {
+      display:none;
+    }
+
+    .menu-link {
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px;
+      border-radius:10px;
+      color:#000000;
+      text-decoration:none;
+      cursor:pointer;
+      margin-bottom:6px;
+      white-space:nowrap;
+    }
+
+    .menu-link:hover,
+    .menu-link.active {
+      background:rgba(255,255,255,.2);
+      color:rgb(0, 0, 0);
+    }
+
+
+    .main 
+    { margin-left: 240px; padding:28px; 
+    }
+    .stat-card { border-radius:8px; 
+        padding:18px; 
+        background:#fff; 
+        box-shadow:0 8px 20px rgba(2,6,23,0.03);
+     }
+    .table-card 
+    { background:#fff; 
+        box-shadow:0 8px 20px rgba(2,6,23,0.03); 
+        padding:16px;
+         border-radius:8px;
+        }
+    .brand .logo 
+    { width:28px;
+     height:28px; 
+     border-radius:6px; 
+     background:#2563eb; 
+     display:inline-block; 
+     margin-right:8px; }
+
+     /* SPA */
+    .page { display:none; }
+    .active-page { display:block; }
+
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="navbar navbar-light bg-white shadow-sm px-4">
+    <div class="d-flex align-items-center">
+      <div class="brand d-flex align-items-center"><span class="logo"></span><strong></strong></div>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+      
+      <div id="logo" class="logo"><img src="img/images.png" width="40px" alt=""></div>
+      <button id="btnLogout" class="btn btn-outline-danger btn-sm"><img src="img/images (1).png" width="40px" alt="profile.html"></button>
+      
+    </div>
+  </nav>
+
+  
+
+
+  <aside id="sidebar" class="sidebar p-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <strong><span>Crudzaso</span></strong>
+      <button id="toggleSidebar" class="btn btn-sm btn-light">
+        <i class="bi bi-list"></i>
+      </button>
+    </div>
+
+    <div class="menu-link active" data-page="dashboard" >
+      <a class="d-block mb-2" href="dashboard.html"></i> Dashboard</a>
+    </div>
+
+    <div class="menu-link" data-page="solicitudes">
+      <a class="d-block" href="profile.html"><i class="bi bi-person me-2"></i> Profile</a>
+      <span></span>
+    </div>
+
+    <div class="menu-link" data-page="procesos">
+      <a class="d-block mb-2" href="task-form.html"><i class="bi bi-plus-circle me-2"></i> New Task</a>
+      <span></span>
+    </div>
+  </aside>
+  
+
+
+
+  <!-- MAIN -->
+  <main class="main">
+    <h3 class="mb-3">Task Manager</h3>
+    <div class="row g-3 mb-4">
+      <div class="col-md-3"><div class="stat-card"><small class="text-muted">Total Tasks</small><h4 id="total">0</h4></div></div>
+      <div class="col-md-3"><div class="stat-card"><small class="text-muted">Completed</small><h4 id="completed">0</h4></div></div>
+      <div class="col-md-3"><div class="stat-card"><small class="text-muted">Pending</small><h4 id="pending">0</h4></div></div>
+      <div class="col-md-3"><div class="stat-card"><small class="text-muted">Overall Progress</small><h4 id="progress">0%</h4></div></div>
+    </div>
+
+    <section id="dashboard" class="page active-page">
+    <div class="table-card">
+      <div class="mb-3 d-flex justify-content-between">
+        <input id="search" class="form-control w-50" placeholder="Search tasks by title...">
+        <button id="btnNew" class="btn btn-primary btn-sm me-3">+ New Task</button>
+        <div></div>
+      </div>
+
+      <table class="table align-middle">
+        <thead>
+          <tr>
+            <th>Task Name</th>
+            <th>Category</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Due Date</th>
+            <th style="width:120px">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="taskTable"></tbody>
+      </table>
+    </div>
+    </div>
+    </section>
+
+
+
+
+    
+  </main>
+
+  <script>
+
+document.getElementById("toggleSidebar").addEventListener("click", () => {
+  document.getElementById("sidebar").classList.toggle("collapsed");
+});
+
+/* navegación */
+document.querySelectorAll(".menu-link").forEach(link => {
+  link.addEventListener("click", () => {
+    document.querySelectorAll(".menu-link").forEach(l => l.classList.remove("active"));
+    link.classList.add("active");
+
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active-page"));
+    document.getElementById(link.dataset.page).classList.add("active-page");
+  });
+});
+    
+const API_URL = "http://localhost:3000";
+
+const user = JSON.parse(localStorage.getItem("loggedUser"));
+if (!user) {
+  window.location.href = "login.html";
+}
+
+document.getElementById("btnLogout").addEventListener("click", () => {
+  localStorage.removeItem("loggedUser");
+  window.location.href = "login.html";
+});
+
+document.getElementById("btnNew").addEventListener("click", () => {
+  localStorage.removeItem("editTaskId");
+  window.location.href = "task-form.html";
+});
+
+async function loadTasks(q = "") {
+  try {
+    // buscar tareas del usuario
+    const url = `${API_URL}/tasks?userId=${user.id}`;
+    const res = await fetch(url);
+    const tasks = await res.json();
+
+    const filtered = q ? tasks.filter(t => t.title.toLowerCase().includes(q.toLowerCase())) : tasks;
+
+    document.getElementById("total").innerText = filtered.length;
+    document.getElementById("completed").innerText = filtered.filter(t => t.status === "Completed").length;
+    document.getElementById("pending").innerText = filtered.filter(t => t.status === "Pending").length;
+
+    // progress simple:
+    const prog = filtered.length ? Math.round((filtered.filter(t => t.status === "Completed").length / filtered.length) * 100) : 0;
+    document.getElementById("progress").innerText = `${prog}%`;
+
+    const table = document.getElementById("taskTable");
+    table.innerHTML = "";
+
+    filtered.forEach(t => {
+      table.innerHTML += `
+        <tr>
+          <td>${t.title}</td>
+          <td>${t.category || '-'}</td>
+          <td>${t.priority}</td>
+          <td>${t.status}</td>
+          <td>${t.date || '-'}</td>
+          <td>
+            <button class="btn btn-sm btn-warning me-1" onclick="onEdit(${t.id})"><i class="bi bi-pencil"></i></button>
+            <button class="btn btn-sm btn-danger" onclick="onDelete(${t.id})"><i class="bi bi-trash"></i></button>
+          </td>
+        </tr>
+      `;
+    });
+  } catch (err) {
+    console.error(err);
+    alert("Error cargando tareas");
+  }
+}
+
+async function onDelete(id) {
+  if (!confirm("¿Eliminar tarea?")) return;
+  await fetch(`${API_URL}/tasks/${id}`, { method: "DELETE" });
+  loadTasks(document.getElementById("search").value);
+}
+
+function onEdit(id) {
+  localStorage.setItem("editTaskId", id);
+  window.location.href = "task-form.html";
+}
+
+// search
+document.getElementById("search").addEventListener("input", (e) => {
+  loadTasks(e.target.value);
+});
+
+loadTasks();
+
+</script>
+
+</body>
+</html>
